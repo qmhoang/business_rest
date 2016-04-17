@@ -14,13 +14,13 @@
       <entry name="!?*.aj" />
     </wildcardResourcePatterns>
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="false">
+      <profile default="true" name="Default" enabled="true">
         <processorPath useClasspath="true" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="business_rest_service_main" target="1.5" />
-      <module name="business_rest_service_test" target="1.5" />
+      <module name="business_rest_service_main" target="1.8" />
+      <module name="business_rest_service_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
