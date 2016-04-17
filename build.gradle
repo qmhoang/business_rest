@@ -15,10 +15,5 @@ dependencies {
     compile 'org.projectlombok:lombok:1.16.8'
     compile 'com.sparkjava:spark-core:2.3'
 
-    compile 'com.goldmansachs:gs-collections-api:7.0.3'
     compile 'com.goldmansachs:gs-collections:7.0.3'
-    compile 'com.goldmansachs:gs-collections-forkjoin:7.0.3'
-
-    testCompile 'com.goldmansachs:gs-collections-testutils:7.0.3'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
 }

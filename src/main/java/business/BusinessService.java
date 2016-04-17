@@ -12,7 +12,6 @@ import com.gs.collections.api.map.ImmutableMap;
 import com.gs.collections.api.map.primitive.MutableIntObjectMap;
 import com.gs.collections.impl.factory.Maps;
 import com.gs.collections.impl.factory.primitive.IntObjectMaps;
-import spark.Response;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +43,7 @@ public class BusinessService {
   }
 
   public static void main(String[] args) {
-    MutableIntObjectMap<Business> businessMap  = loadData(args[0]);
+    MutableIntObjectMap<Business> businessMap  = readCsvData(args[0]);
     MutableList<Business>         businessList = businessMap.toList();
 
     port(5555);
@@ -65,13 +64,20 @@ public class BusinessService {
 
     get("/business/", (req, res) -> {
       res.type(JSON_CONTENT);
+      MutableList<Business> list;
 
       if (req.queryParams().contains("index")) {
         int index = Integer.parseInt(req.queryParams("index"));
-        return getBusinesses(businessList, res, index);
+        res.header("index", Integer.toString(index));
+
+        list = getSubListBusinesses(businessList, index);
       } else {
-        return getBusinesses(businessList, res, 0);
+        res.header("index", "0");
+        list = getSubListBusinesses(businessList, 0);
       }
+
+      res.header("entries", Integer.toString(ENTRIES_PER_PAGE));
+      return JSON_MAPPER.writeValueAsString(list);
     });
 
     exception(NumberFormatException.class, (e, req, res) -> {
@@ -81,18 +87,16 @@ public class BusinessService {
                                                                  .withKeyValue("message",
                                                                                e.toString())));
       } catch (JsonProcessingException ex) {
-        res.body(e.toString());
+        res.body("");
       }
     });
   }
 
-  private static String getBusinesses(MutableList<Business> businessList, Response res, int index) throws JsonProcessingException {
-    res.header("index", Integer.toString(index));
-    res.header("entries", Integer.toString(ENTRIES_PER_PAGE));
-    return JSON_MAPPER.writeValueAsString(businessList.subList(index, index + ENTRIES_PER_PAGE));
+  private static MutableList<Business> getSubListBusinesses(MutableList<Business> businessList, int index) {
+    return businessList.subList(index, index + ENTRIES_PER_PAGE);
   }
 
-  private static MutableIntObjectMap<Business> loadData(String arg) {
+  private static MutableIntObjectMap<Business> readCsvData(String arg) {
     MutableIntObjectMap<Business> businessMap = IntObjectMaps.mutable.of();
 
     try {
