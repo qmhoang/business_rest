@@ -45,7 +45,7 @@ public class BusinessService {
   }
 
   public static void main(String[] args) {
-    new BusinessService().run(5555, args[0]);
+    new BusinessService().run(Integer.parseInt(args[0]), args[1]);
   }
 
   public void stop() {
