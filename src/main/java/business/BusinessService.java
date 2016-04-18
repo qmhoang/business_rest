@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.gs.collections.api.list.MutableList;
-import com.gs.collections.api.map.ImmutableMap;
-import com.gs.collections.api.map.MutableMap;
-import com.gs.collections.api.map.primitive.MutableIntObjectMap;
-import com.gs.collections.impl.factory.Maps;
-import com.gs.collections.impl.factory.primitive.IntObjectMaps;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.map.primitive.MutableIntObjectMap;
+import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.factory.primitive.IntObjectMaps;
 import spark.Spark;
 
 import java.io.File;
@@ -75,7 +75,7 @@ public class BusinessService {
     get("/businesses/", (req, res) -> {
       res.type(JSON_CONTENT);
       MutableMap<String, Object> response = Maps.mutable.of();
-      MutableList<Business> payload;
+      MutableList<Business>      payload;
 
       if (req.queryParams().contains("index")) {
         int index = Integer.parseInt(req.queryParams("index"));
