@@ -14,6 +14,8 @@ dependencies {
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.7.3'
     compile 'org.projectlombok:lombok:1.16.8'
     compile 'com.sparkjava:spark-core:2.3'
-
     compile 'com.goldmansachs:gs-collections:7.0.3'
+
+    testCompile 'com.jayway.restassured:rest-assured:2.9.0'
+    testCompile 'junit:junit:4.12'
 }

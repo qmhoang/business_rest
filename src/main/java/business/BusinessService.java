@@ -9,9 +9,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.gs.collections.api.list.MutableList;
 import com.gs.collections.api.map.ImmutableMap;
+import com.gs.collections.api.map.MutableMap;
 import com.gs.collections.api.map.primitive.MutableIntObjectMap;
 import com.gs.collections.impl.factory.Maps;
 import com.gs.collections.impl.factory.primitive.IntObjectMaps;
+import spark.Spark;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,10 +45,18 @@ public class BusinessService {
   }
 
   public static void main(String[] args) {
-    MutableIntObjectMap<Business> businessMap  = readCsvData(args[0]);
+    new BusinessService().run(5555, args[0]);
+  }
+
+  public void stop() {
+    Spark.stop();
+  }
+
+  public void run(int port, String file) {
+    MutableIntObjectMap<Business> businessMap  = readCsvData(file);
     MutableList<Business>         businessList = businessMap.toList();
 
-    port(5555);
+    port(port);
 
     get("/business/:id", (req, res) -> {
       int id = Integer.parseInt(req.params(":id"));
@@ -62,25 +72,29 @@ public class BusinessService {
       }
     });
 
-    get("/business/", (req, res) -> {
+    get("/businesses/", (req, res) -> {
       res.type(JSON_CONTENT);
-      MutableList<Business> list;
+      MutableMap<String, Object> response = Maps.mutable.of();
+      MutableList<Business> payload;
 
       if (req.queryParams().contains("index")) {
         int index = Integer.parseInt(req.queryParams("index"));
-        res.header("index", Integer.toString(index));
+        response.put("index", index);
 
-        list = getSubListBusinesses(businessList, index);
+        payload = getSubListBusinesses(businessList, index);
       } else {
-        res.header("index", "0");
-        list = getSubListBusinesses(businessList, 0);
+        response.put("index", 0);
+        payload = getSubListBusinesses(businessList, 0);
       }
 
-      res.header("entries", Integer.toString(ENTRIES_PER_PAGE));
-      return JSON_MAPPER.writeValueAsString(list);
+      response.put("entries", ENTRIES_PER_PAGE);
+      response.put("businesses", payload);
+
+      return JSON_MAPPER.writeValueAsString(response);
     });
 
     exception(NumberFormatException.class, (e, req, res) -> {
+      res.type(JSON_CONTENT);
       res.status(BAD_REQUEST_STATUS);
       try {
         res.body(JSON_MAPPER.writeValueAsString(BAD_REQUEST_ERROR.toMap()
@@ -92,11 +106,11 @@ public class BusinessService {
     });
   }
 
-  private static MutableList<Business> getSubListBusinesses(MutableList<Business> businessList, int index) {
+  private MutableList<Business> getSubListBusinesses(MutableList<Business> businessList, int index) {
     return businessList.subList(index, index + ENTRIES_PER_PAGE);
   }
 
-  private static MutableIntObjectMap<Business> readCsvData(String arg) {
+  private MutableIntObjectMap<Business> readCsvData(String arg) {
     MutableIntObjectMap<Business> businessMap = IntObjectMaps.mutable.of();
 
     try {
