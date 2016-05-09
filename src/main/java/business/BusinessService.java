@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
@@ -18,6 +21,8 @@ import spark.Spark;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 
 import static spark.Spark.*;
 
@@ -57,6 +62,20 @@ public class BusinessService {
     MutableList<Business>         businessList = businessMap.toList();
 
     port(port);
+
+    before("/*", (request, response) -> {
+      if (request.headers().contains("Authorization")) {
+        String token = request.headers("Authorization");
+
+        HttpResponse<JsonNode> resp = Unirest.get("http://localhost:5556/verify").header("Authorization", token).asJson();
+
+        if (resp.getStatus() != 200) {
+          halt(401);
+        }
+      } else {
+        halt(401);
+      }
+    });
 
     get("/business/:id", (req, res) -> {
       int id = Integer.parseInt(req.params(":id"));
