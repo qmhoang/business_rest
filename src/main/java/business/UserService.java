@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
@@ -12,6 +13,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.concurrent.Exchanger;
 
 import static spark.Spark.*;
 
@@ -38,6 +40,12 @@ public class UserService {
 
     get("/auth", ((request, response) -> {
       response.type(JSON_CONTENT);
+
+      if (!request.headers().contains("Authorization")) {
+        halt(401);
+        return "";
+      }
+
       String authorization_hash = request.headers("Authorization");
       if (authorization_hash.contains("Basic")) {
         authorization_hash = authorization_hash.substring(6);
@@ -71,18 +79,18 @@ public class UserService {
     get("/verify", (request, response) -> {
       String token = request.headers("Authorization");
 
-      String subject = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject();
+      try {
+        String subject = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject();
 
-      if (usersToToken.containsKey(subject) && usersToToken.get(subject).contentEquals(token)) {
-      } else {
+        if (usersToToken.containsKey(subject) && usersToToken.get(subject).contentEquals(token)) {
+        } else {
+          halt(401);
+        }
+      } catch (Exception e) {
         halt(401);
       }
 
       return "";
-    });
-
-    exception(com.fasterxml.jackson.core.JsonParseException.class, (e, req, res) -> {
-      halt(401);
     });
   }
 }
